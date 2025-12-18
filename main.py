@@ -41,3 +41,45 @@ df["year"] = parts[2].astype('int')
 df.drop(['Z_CostContact', 'Z_Revenue', 'Dt_Customer'],
         axis=1,
         inplace=True)
+
+
+"""
+now Doing visualizations of refined data set
+"""
+
+floats, objects = [], []
+for col in df.columns:
+    if df[col].dtype == object:
+        objects.append(col)
+    elif df[col].dtype == float:
+        floats.append(col)
+
+print(objects)
+print(floats)
+
+plt.subplots(figsize=(15, 10))
+for i, col in enumerate(objects):
+    plt.subplot(2, 2, i + 1)
+    sb.countplot(df[col])
+plt.show()
+
+df['Marital_Status'].value_counts()
+
+plt.subplots(figsize=(15, 10))
+for i, col in enumerate(objects):
+    plt.subplot(2, 2, i + 1)
+
+    df_melted = df.melt(id_vars=[col], value_vars=['Response'], var_name='hue')
+    sb.countplot(x=col, hue='value', data=df_melted)
+plt.show()
+
+for col in df.columns:
+    if df[col].dtype == object:
+        le = LabelEncoder()
+        df[col] = le.fit_transform(df[col])
+        
+plt.figure(figsize=(15, 15))
+sb.heatmap(df.corr() > 0.8, annot=True, cbar=False)
+plt.show()
+
+
