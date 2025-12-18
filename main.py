@@ -7,6 +7,7 @@ import seaborn as sb
 
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.cluster import KMeans
+from sklearn.manifold import TSNE
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -82,4 +83,41 @@ plt.figure(figsize=(15, 15))
 sb.heatmap(df.corr() > 0.8, annot=True, cbar=False)
 plt.show()
 
+error = []
+for n_clusters in range(1, 21):
+    model = KMeans(init='k-means++',
+                   n_clusters=n_clusters,
+                   max_iter=500,
+                   random_state=22)
+    model.fit(df)
+    error.append(model.inertia_)
+plt.figure(figsize=(10, 5))
+sb.lineplot(x=range(1, 21), y=error)
+sb.scatterplot(x=range(1, 21), y=error)
+plt.show()
 
+#from here we get the elbow point as 5 so we will take n_clusters=5
+model = KMeans(init='k-means++',
+               n_clusters=5,
+                max_iter=500,
+                random_state=22)
+segments = model.fit_predict(df)
+
+#final Output Plot 
+#segmentation here it is difficult to visualize in higher dimensions so we will take two features Income and MntWines for visualization
+#use TSNE for higher dimensions
+from sklearn.manifold import TSNE
+model = TSNE(n_components=2, random_state=0)
+tsne_data = model.fit_transform(df)
+plt.figure(figsize=(7, 7))
+plt.scatter(tsne_data[:, 0], tsne_data[:, 1])
+plt.show()
+
+#here we will plot Income vs MntWines
+
+plt.figure(figsize=(7, 7))
+
+df_tsne = pd.DataFrame({'x': tsne_data[:, 0], 'y': tsne_data[:, 1], 'segment': segments})
+
+sb.scatterplot(x='x', y='y', hue='segment', data=df_tsne)
+plt.show()
